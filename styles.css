@@ -1,0 +1,12 @@
+h1 {
+width: 50%;
+height: 60px;
+margin: 10px;
+padding: 100px;
+display: inline;
+}
+
+h2 {
+width: 90%;
+height: 5px;
+}
