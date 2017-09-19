@@ -45,6 +45,4 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-var server = app.listen(3000, function() { //Starts the server and listens for incoming connections on port 3000
-    log.info('Express server listening on port 3000');
-});
+module.exports = app;
