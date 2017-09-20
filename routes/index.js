@@ -23,42 +23,39 @@ router.get('/resume.docx', function(req,res,next){
 	res.sendFile('resume.docx', {root : __dirname});
 });
 
-router.get('/viewstream.html', function(req,res,next){ //From here, route a streambuffer from a PC, send it to the client, and have it played as a stream.
-	if (req.url != "videos/schwifty.mp4") {
-    res.writeHead(200, { "Content-Type": "text/html" });
-    res.end('<video src="http://localhost:8888/movie.mp4" controls></video>');
+router.get('/schwifty.html', function(req,res,next){ //Works only when you click AndrewBraunEE
+	res.sendFile('schwifty.html', {root : __dirname});
+});
+
+router.get('/schwifty.mp4', function(req,res,next){ //Works to stream a mp4 file.
+  const path = 'public/videos/schwifty.mp4'
+  const stat = fs.statSync(path)
+  const fileSize = stat.size
+  const range = req.headers.range
+  if (range) {
+    const parts = range.replace(/bytes=/, "").split("-")
+    const start = parseInt(parts[0], 10)
+    const end = parts[1] 
+      ? parseInt(parts[1], 10)
+      : fileSize-1
+    const chunksize = (end-start)+1
+    const file = fs.createReadStream(path, {start, end})
+    const head = {
+      'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+      'Accept-Ranges': 'bytes',
+      'Content-Length': chunksize,
+      'Content-Type': 'video/mp4',
+    }
+    res.writeHead(206, head);
+    file.pipe(res);
   } else {
-
-	var file = path.resolve(__dirname, "videos/schwifty.mp4");
-	fs.stat(file, function(err, stats){
-		if(err){
-			if(err.code == 'ENOENT'){
-				return res.sendStatus(404);
-			}
-		}
-		res.end(err);
-	});
-	var range = req.headers.range;
-	if (!range){
-		//Error 416 wrong range
-		return res.sendStatus(416);
-	}
-	var positions = range.replace(/bytes=/, "").split("-");
-	var start = parseInt(positions[0],10);
-	var total = stats.size;
-	var end = positions[1] ? parseInt(positions[1], 10) : total - 1;
-	var chunksize = (end - start) + 1;
-
-	res.writeHead(206, {
-		"Content-Range": "bytes " + start + "-" + end + "/" + total,
-		"Accept-Ranges": "bytes",
-		"Content-Length": chunksize,
-		"Content-Type": "video/mp4"
-	});
-
-	var stream = fs.createReadStream(file, {start: start, end: end})
-		.on("open", function() {stream.pipe(res);}).on("error", function(err){res.end(err);});
-	});
-
+    const head = {
+      'Content-Length': fileSize,
+      'Content-Type': 'video/mp4',
+    }
+    res.writeHead(200, head)
+    fs.createReadStream(path).pipe(res)
+  }
+});
 
 module.exports = router;
