@@ -1,7 +1,7 @@
 {
 	"targets":[
 	{
-		"target_name": "class",
+		"target_name": "BruinClassParser",
 		"sources": ["process.cpp"]
 	}]
 }
