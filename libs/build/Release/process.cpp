@@ -2,53 +2,55 @@
 #include <string>
 #include <cerrno>
 #include "process.h"
-
-
 using namespace v8;
 
-JavaClasses::JavaClasses(v8::Local<Object> exports){ //We pass in the exports object here in order to give access to v8 objects
+JavaClasses::JavaClasses(const FunctionCallbackInfo<Value>& exports){ //We pass in the exports object here in order to give access to v8 objects
 	//m_name = in_name; m_code = in_code; 
-	v8::Isolate* isolate = exports->GetIsolate();
-	v8::Local<FunctionTemplate> tpl = v8::FunctionTemplate::New(isolate, New);	//Prepare constructor template aka create interface to other functions
+	v8::Isolate* isolate = exports.GetIsolate();
+	v8::Local<FunctionTemplate> tpl = v8::FunctionTemplate::New(isolate, this->JavaClasses::JavaClasses);	//Prepare constructor template aka create interface to other functions
 	tpl->SetClassName(String::NewFromUtf8(isolate, "JavaClasses"));
-	tpl->InstanceTemplate()->SetInternalFieldCount(3);
+	tpl->InstanceTemplate()->SetInternalFieldCount(3); //Sets 3 fields within JavaScript Object "JavaClasses"
 
-	v8::Local<Object> args = exports;
+	const FunctionCallbackInfo<Value>& args = exports;
 
 	//We then have to prototype the functions that should go in our internal field
-	NODE_SET_PROTOTYPE_METHOD(tpl, "GetNameArray", GetNameArray);
-	NODE_SET_PROTOTYPE_METHOD(tpl, "GetCodeArray", GetCodeArray);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "GetNameArray", &JavaClasses::GetNameArray(args));
+	NODE_SET_PROTOTYPE_METHOD(tpl, "GetCodeArray", &JavaClasses::GetCodeArray(args));
 	if(args.IsConstructCall()){ //Invoked in JS using new MyObject(..._)
-		double value = args[0] -> IsUndefined() ? JavaClasses* obj = new JavaClasses(value);
-		obj->Wrap(args.This());
-		args.GetReturnValue().Set(args.This());
+		if (!args[0]->IsUndefined()) {
+			JavaClasses* obj = new JavaClasses(args);
+			args.GetReturnValue().Set(args.This());
+		}
 	}
 	else{
 		const int argc = 1;
 		v8::Local<Value> argv[argc] = {args[0]}; //These are local arguments created
 		v8::Local<Context> context = isolate->GetCurrentContext();
-		v8::Local<Function> cons = v8::Local<Function>::New(isolate, constructor);
+		v8::Local<Function> cons = v8::Local<Function>::New(isolate, this->JavaClasses::JavaClasses);
 		v8::Local<Object> result = cons->NewInstance(context, argc, argv).ToLocalChecked();
-		args.getReturnValue().Set(result);
+		args.GetReturnValue().Set(result);
 	}
 }
 void JavaClasses::NewInstance(const FunctionCallbackInfo<Value>& args){
 	v8::Isolate* isolate = args.GetIsolate();
 	const unsigned argc = 1;
 	v8::Local<Value> argv[argc] = { args[0] };
-	Local<Function> cons = Local<Function>::New(isolate, constructor);
+	Local<Function> cons = Local<Function>::New(isolate, this->JavaClasses::JavaClasses);
 	Local<Context> context = isolate->GetCurrentContext();
 	Local<Object> instance = cons->NewInstance(context, argc, argv).ToLocalChecked();
 	args.GetReturnValue().Set(instance);
 }
-void JavaClasses::init(const Handle<Array>& in_name, const Handle<Array>& in_code){
+void JavaClasses::init(const v8::Handle<v8::Array>& in_name, const v8::Handle<v8::Array>& in_code) {
 	m_name = in_name; m_code = in_code;
 }
-void JavaClasses::GetNameArray(const v8::FunctionCallbackInfo<v8::Value>& args){
-	args.GetReturnValue().set(m_name);
+v8::FunctionCallback JavaClasses::GetNameArray(const v8::FunctionCallbackInfo<v8::Value>& args){
+	v8::HandleScope scope;
+	args.GetReturnValue().Set(m_name);
+	return scope.Close(args.GetIsolate);
 }
-void JavaClasses::GetCodeArray(const v8::FunctionCallbackInfo<v8::Value>& args){
-	args.GetReturnValue().set(m_code);
+v8::FunctionCallback JavaClasses::GetCodeArray(const v8::FunctionCallbackInfo<v8::Value>& args){
+	args.GetReturnValue().Set(m_code);
+	return;
 }
 //End of JavaClasses's Functions
 
@@ -105,23 +107,22 @@ void ProcessTextClasses(const v8::FunctionCallbackInfo<v8::Value>& args){ //Proc
 		isolate->ThrowException(v8::Exception::TypeError(v8::String::NewFromUtf8(isolate, "Argument for process.cpp must be a string")));
 		return;
 	}
-	const char* stringptr = ToCString(args[0]->ToString());
+	const char* stringptr = ToCString(String::Utf8Value(args[0]));
 	if(stringptr == NULL){
 		isolate->ThrowException(v8::Exception::TypeError(v8::String::NewFromUtf8(isolate, "Error Creating C ptr from V8 type (NULL PTR returned)")));
 		return;
 	}
 	Processor classes(stringptr);
-	Handle<Array> Name = ListToV8ArrayName(classes);
-	Handle<Array> Codename = ListToV8ArrayCode(classes);
+	v8::Handle<v8::Array> Name = ListToV8ArrayName(classes, args);
+	v8::Handle<v8::Array> Codename = ListToV8ArrayCode(classes, args);
 
-	JavaClasses(args) Java_Classes;
-	Java_Classes.init(Name, Codename);
-
-	args.GetReturnValue().Set(Java_Classes);
+	JavaClasses Java_Classes(args);
+	Java_Classes.init(Name, Codename); //Have to wrap Java_Classes first.
 }
 
+/*
 void Initialize(v8::Local<v8::Object> exports){
-	NODE_SET_METHOD(exports, "processtextclasses", ProcessTextClasses );
-}
+	node::NODE_SET_METHOD(exports, "processtextclasses", this->ProcessTextClasses);
+}*/
 
-NODE_MODULE("ProcessText", Initialize)//Sets up Entry Point
+//node::NODE_MODULE("ProcessText", Initialize);//Sets up Entry Point

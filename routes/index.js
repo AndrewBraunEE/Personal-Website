@@ -6,11 +6,12 @@ var fs = require("fs"),
     path = require("path");
 var getelement = require("get-element");
 var request = require("request"),
-    cheerio = require("cheerio"),
-    processclass = require("./libs/build/Release/classes.node");
+    cheerio = require("cheerio")
+    //processclass = require("./libs/build/Release/classes.node");
 
 
 //Example: https://sa.ucla.edu/ro/Public/SOC/Results?t=17F&sBy=subject&sName=Aerospace+Studies+%28AERO+ST%29&subj=AERO+ST&crsCatlg=Enter+a+Catalog+Number+or+Class+Title+%28Optional%29&catlg=&cls_no=&btnIsInIndex=btn_inIndex
+/*
 class search_result{
 	constructor(term, classname, classcode){ //Term = 17F , classname = Aerospace+Studies , classcode = "AERO+ST"
 		this.classname = classname;
@@ -18,7 +19,7 @@ class search_result{
 		this.string = "https://sa.ucla.edu/ro/Public/SOC/Results?t=" + term + "&sBy=subject&sName=" + classname + "%28" + classcode + "%29&subj=" + classcode + "&crsCatlg=Enter+a+Catalog+Number+or+Class+Title+%28Option%29&catlg=&cls_no=&btnIsInIndex=btn_inIndex";
 	};
 };
-
+*/ /*
 function genClasses(url){
   this.url = url;
   this.docname = "ucla_register.html"
@@ -40,15 +41,15 @@ function genClasses(url){
     }
     console.log("HTML File could not be found")
   };*/
-}
-
+//}
+/*
 var classgenerator = new genClasses("https://sa.ucla.edu/ro/Public/SOC/Results?t=17F&sBy=subject&sName=Aerospace+Studies+%28AERO+ST%29&subj=AERO+ST&crsCatlg=Enter+a+Catalog+Number+or+Class+Title+%28Optional%29&catlg=&cls_no=&btnIsInIndex=btn_inIndex");
 console.log(classgenerator.HTML);
 
 function getStatus(in_search){
 	//getelement.
 };
-
+*/
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
