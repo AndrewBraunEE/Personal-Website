@@ -72,14 +72,6 @@ router.get('/schwifty.html', function(req,res,next){ //Works only when you click
 	res.sendFile('schwifty.html', {root : __dirname});
 });
 
-router.get('/bruinschedulereminder.html', function(req,res,next){
-  res.sendFile('bruinschedulereminder.html', {root : __dirname});
-});
-
-router.get('/bruinschedulereminder.html/#process', function(req,res,next){
-  alert('test');
-});
-
 router.get('/schwifty.mp4', function(req,res,next){ //Works to stream a mp4 file.
   const path = 'public/videos/schwifty.mp4'
   const stat = fs.statSync(path)
